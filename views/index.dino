@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test Dino</title>
+		<link rel="stylesheet" href="stylesheets/main.css" type="text/css">
+	</head>
+	<body>
+		<%= include header %>
+		<%= render title with titles %>
+		<div class="banner">
+			<h1>Hello, this is a test</h1>
+		</div>
+		<%= include footer %>
+	</body>
+</html>

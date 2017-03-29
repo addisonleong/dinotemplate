@@ -1,0 +1,3 @@
+<div class="random">
+	<h1><%= title %>
+</div>

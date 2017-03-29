@@ -1,0 +1,22 @@
+{
+  "name": "dinotemplate",
+  "version": "0.2.5",
+  "author": "Addison Leong",
+  "description": "Example of how to use DinoTemplate",
+  "engines": {
+    "node": "5.9.1"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "4.13.3"
+  },
+  "keywords": [
+    "node",
+    "express"
+  ],
+  "license": "MIT"
+}

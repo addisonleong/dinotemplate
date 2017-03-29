@@ -1,0 +1,6 @@
+{
+  "name": "DinoTemplate Example",
+  "author": "Addison Leong",
+  "description": "Example of how to use DinoTemplate",
+  "keywords": ["node", "express", "static"],
+}
