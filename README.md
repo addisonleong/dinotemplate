@@ -1,3 +1,4 @@
+![DinoTemplate](https://raw.githubusercontent.com/addisonleong/dinotemplate/master/dinotemplate.png)
 # DinoTemplate
 ## Simple templating for Express
 
