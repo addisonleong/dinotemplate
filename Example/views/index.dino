@@ -6,6 +6,7 @@
 	</head>
 	<body>
 		<%= include header %>
+		<%= if (login==true) then (include header) %>
 		<%= render title with titles %>
 		<div class="banner">
 			<h1>Hello, this is a test</h1>

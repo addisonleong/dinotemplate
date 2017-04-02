@@ -8,9 +8,10 @@ exports.express = function(filePath, options, callback) {
 	fs.readFile(filePath, function (err, content) {
 		if (err) return callback(new Error(err));
 		var file = content.toString();
-		file = handleOptions(file, options);
+		file = handleConditionals(file, options);
 		file = handleIncludes(file);
 		file = handleComponents(file, options);
+		file = handleOptions(file, options);
 		return callback(null, file);
 	});
 }
@@ -53,16 +54,72 @@ function render(filePath, options) {
 	try {
 		var contents = fs.readFileSync(filePath, options);
 		contents = contents.toString();
+		contents = handleConditionals(contents, options);
 		contents = handleOptions(contents, options);
-		contents = handleIncludes(contents);
 		contents = handleComponents(contents, options);
+		contents = handleIncludes(contents);
 		return contents;
 	} catch(e) {
 		return "";
 	}
 }
 
+/* Renders dino text synchronously */
+// Parameters:
+// - file: The dino file
+// - options: Options to render into the file
+// Returns:
+// - The file as plain HTML text
+function renderText(file, options) {
+	try {
+		contents = file;
+		contents = handleConditionals(contents, options);
+		contents = handleIncludes(contents);
+		contents = handleComponents(contents, options);
+		contents = handleOptions(contents, options);
+		return contents;
+	} catch(e) {
+		return "";
+	}
+}
+
+/* Finds if statements and executes the appropriate calls */
+// Parameters:
+// - file: The file to render
+// - options: The options
+// Returns:
+// - The file with the conditionals executed
+function handleConditionals(file, options) {
+	var regex = /<%=\s*if\s+\((\w+)\s*==\s*([\w\d]+)\)\s+then\s+\((.*?)\)\s*%>/g;
+	// var regex = /<%= if \((login)==(true)\) then \((include header)\) %>/g;
+	var matches = matchRegex(file, regex, 3);
+	if (matches) {
+		for (i in matches) {
+			if (matches[i][0] in options) {
+				if (options[matches[i][0]] == eval(matches[i][1])) {
+					// console.log("<%= " + matches[i][2] + " %>")
+					// console.log(renderText("<%= " + matches[i][2] + " %>", options));
+					var oldValue = '<%=\\s*if\\s+\\(' + matches[i][0] + '\\s*==\\s*' + matches[i][1] + '\\)\\s+then\\s+\\(' + matches[i][2] + '\\)\\s*%>';
+					file = file.replace(new RegExp(oldValue, 'g'), renderText("<%= " + matches[i][2] + " %>", options));
+				} else {
+					var oldValue = '<%=\\s*if\\s+\\(' + matches[i][0] + '\\s*==\\s*' + matches[i][1] + '\\)\\s+then\\s+\\(' + matches[i][2] + '\\)\\s*%>';
+					file = file.replace(new RegExp(oldValue, 'g'), "");
+				}
+			} else {
+				var oldValue = '<%=\\s*if\\s+\\(' + matches[i][0] + '\\s*==\\s*' + matches[i][1] + '\\)\\s+then\\s+\\(' + matches[i][2] + '\\)\\s*%>';
+				file = file.replace(new RegExp(oldValue, 'g'), "");
+			}
+		}
+	}
+	return file;
+}
+
 /* Replaces options with appropriate inputs */
+// Parameters:
+// - file: The file to render
+// - options: The options
+// Returns:
+// - The file with the options inserted
 function handleOptions(file, options) {
 	var regex = /<%=\s*(\S+)\s*%>(?!>)/g;
 	var matches = matchRegex(file, regex, 1);
@@ -97,6 +154,7 @@ function handleIncludes(file) {
 /* Renders components in output */
 // Parameters:
 // - file: The name of the file to render to
+// - options: The options
 // Returns:
 // - The file with the components rendered
 function handleComponents(file, options) {

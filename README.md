@@ -82,3 +82,23 @@ In our example we render a component for each element in the "titles" array. So 
 <h1>Dino</h1>
 <h1>Express</h1>
 ```
+
+### Conditionals
+Conditionals are good for rendering specific protocols given a certain state. One instance of this would be if you want to render a user menu bar, but only if a user is logged in. To use conditionals, we need to specify the variable we will condition on and the value it should expect. We set the actual value of the variable in the options dictionary. Here's an example:
+
+In our routes:
+```
+options = {
+	shouldRender: true
+};
+```
+
+In index.dino:
+```
+<% if (shouldRender==true) then (include header) %>
+```
+
+What happens here is simple. If **shouldRender** is specified to "true" in the options (it is), then we execute the protocol to include the header partial. Our scheme is therefore:
+```
+<%= if (variable==value) then (protocol) %>
+```

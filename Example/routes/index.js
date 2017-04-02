@@ -10,7 +10,8 @@ var index = function(request, response) {
 			{
 				"title": "Addison"
 			}
-		]
+		],
+		"login": true
 	};
 	// console.log(navbar);
 	response.render('index', options);
