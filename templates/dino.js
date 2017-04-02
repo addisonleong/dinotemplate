@@ -37,7 +37,7 @@ function renderComponent(data, component) {
 		if (file) {
 			result += file;
 		} else {
-			return null;
+			return "";
 		}
 	}
 	return result;
@@ -58,7 +58,7 @@ function render(filePath, options) {
 		contents = handleComponents(contents, options);
 		return contents;
 	} catch(e) {
-		return null;
+		return "";
 	}
 }
 
