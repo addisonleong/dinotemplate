@@ -64,7 +64,7 @@ response.render('index', options);
 
 In index.dino:
 ```
-<%= render title with titles %>
+<%= foreach in titles render title %>
 ```
 
 In title.dino:
@@ -74,7 +74,7 @@ In title.dino:
 
 Let us explain the syntax of the render. The "render" term signals that we are going to render a component. The "with" terms tells us what option we are pulling data from. So our scheme is:
 ```
-<%= render component with array %>
+<%= foreach in array render component %>
 ```
 
 In our example we render a component for each element in the "titles" array. So we render:
