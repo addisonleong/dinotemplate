@@ -158,11 +158,11 @@ function handleIncludes(file) {
 // Returns:
 // - The file with the components rendered
 function handleComponents(file, options) {
-	var regex = /<%=\s*foreach in (\S+) render (\S+)\s*%>(?!>)/g;
+	var regex = /<%=\s*foreach\s+in\s+(\S+)\s+render\s+(\S+)\s*%>(?!>)/g;
 	var matches = matchRegex(file, regex, 2);
 	if (matches) {
 		for (i in matches) {
-			var oldValue = '<%=\\s*foreach in ' + matches[i][0] + ' render ' + matches[i][1] + '\\s*%>(?!>)';
+			var oldValue = '<%=\\s*foreach\\s+in\\s+' + matches[i][0] + '\\s+render\\s+' + matches[i][1] + '\\s*%>(?!>)';
 			file = file.replace(new RegExp(oldValue, 'g'), renderComponent(options[matches[i][0]], matches[i][1]));
 		}
 	}
