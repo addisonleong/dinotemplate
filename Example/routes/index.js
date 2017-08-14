@@ -6,9 +6,10 @@ var model = require('../templates/dino').model;
 
 var index = function(request, response) {
 	var options = {
+		"VALUE": "Stegosaurus",
 		"titles": [
 			{
-				"title": "Addison"
+				"title": "Dinosaur"
 			}
 		],
 		"login": true
