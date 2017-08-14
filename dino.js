@@ -9,6 +9,7 @@ exports.express = function(filePath, options, callback) {
 		if (err) return callback(new Error(err));
 		var file = content.toString();
 		file = handleConditionals(file, options);
+		file = handleWithIncludes(file, options);
 		file = handleIncludes(file);
 		file = handleComponents(file, options);
 		file = handleOptions(file, options);
@@ -57,6 +58,7 @@ function render(filePath, options) {
 		contents = handleConditionals(contents, options);
 		contents = handleOptions(contents, options);
 		contents = handleComponents(contents, options);
+		contents = handleWithIncludes(contents, options);
 		contents = handleIncludes(contents);
 		return contents;
 	} catch(e) {
@@ -74,6 +76,7 @@ function renderText(file, options) {
 	try {
 		contents = file;
 		contents = handleConditionals(contents, options);
+		contents = handleWithIncludes(contents, options);
 		contents = handleIncludes(contents);
 		contents = handleComponents(contents, options);
 		contents = handleOptions(contents, options);
@@ -146,6 +149,24 @@ function handleIncludes(file) {
 		for (i in matches) {
 			var oldValue = '<%=\\s*include ' + matches[i][0] + '\\s*%>(?!>)';
 			file = file.replace(new RegExp(oldValue, 'g'), render('views/partials/' + matches[i][0] + '.dino', null));
+		}
+	}
+	return file;
+}
+
+/* Includes additional templates in template output with options */
+// Parameters:
+// - file: The name of the file to render to
+// - options: The options to render to the file
+// Returns:
+// - The file with the included partial inserted
+function handleWithIncludes(file, options) {
+	var regex = /<%=\s*include\s+(\S+)\s+with options\s*%>(?!>)/g;
+	var matches = matchRegex(file, regex, 1);
+	if (matches) {
+		for (i in matches) {
+			var oldValue = '<%=\\s*include\\s+' + matches[i][0] + '\\s+with options\\s*%>(?!>)';
+			file = file.replace(new RegExp(oldValue, 'g'), render('views/partials/' + matches[i][0] + '.dino', options));
 		}
 	}
 	return file;
