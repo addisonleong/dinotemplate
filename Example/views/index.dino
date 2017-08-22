@@ -13,6 +13,6 @@
 		</div>
 		<h1><%= VALUE %></h1>
 		<h1><%= titles[0].title %></h1>
-		<%= include footer with options%>
+		<%= include footer %>
 	</body>
 </html>

@@ -8,11 +8,7 @@ exports.express = function(filePath, options, callback) {
 	fs.readFile(filePath, function (err, content) {
 		if (err) return callback(new Error(err));
 		var file = content.toString();
-		file = handleConditionals(file, options);
-		file = handleWithIncludes(file, options);
-		file = handleIncludes(file);
-		file = handleComponents(file, options);
-		file = handleOptions(file, options);
+		file = renderText(file, options);
 		return callback(null, file);
 	});
 }
@@ -55,12 +51,7 @@ function render(filePath, options) {
 	try {
 		var contents = fs.readFileSync(filePath, options);
 		contents = contents.toString();
-		contents = handleConditionals(contents, options);
-		contents = handleOptions(contents, options);
-		contents = handleComponents(contents, options);
-		contents = handleWithIncludes(contents, options);
-		contents = handleIncludes(contents);
-		return contents;
+		return renderText(contents, options);
 	} catch(e) {
 		return "";
 	}
@@ -76,8 +67,8 @@ function renderText(file, options) {
 	try {
 		contents = file;
 		contents = handleConditionals(contents, options);
-		contents = handleWithIncludes(contents, options);
-		contents = handleIncludes(contents);
+		// contents = handleWithIncludes(contents, options);
+		contents = handleIncludes(contents, options);
 		contents = handleComponents(contents, options);
 		contents = handleOptions(contents, options);
 		return contents;
@@ -108,25 +99,12 @@ function handleConditionals(file, options) {
 				var oldValue = '<%=\\s*if\\s+\\(\\s*' + conditional + '\\s*\\)\\s+then\\s+\\(\\s*' + script + '\\s*\\)\\s*%>';
 				file = file.replace(new RegExp(oldValue, 'g'), "");
 			}
-			// if (matches[i][0] in options) {
-			// 	if (options[matches[i][0]] == eval(matches[i][1])) {
-			// 		// console.log("<%= " + matches[i][2] + " %>")
-			// 		// console.log(renderText("<%= " + matches[i][2] + " %>", options));
-					
-			// 	} else {
-			// 		var oldValue = '<%=\\s*if\\s+\\(' + matches[i][0] + '\\s*==\\s*' + matches[i][1] + '\\)\\s+then\\s+\\(' + matches[i][2] + '\\)\\s*%>';
-			// 		file = file.replace(new RegExp(oldValue, 'g'), "");
-			// 	}
-			// } else {
-			
-			// }
 		}
 	}
 	return file;
 }
 
 function interpretVariables(string, options) {
-	// let pieces = string.replace("===", " === ").replace(">=", " >= ").replace("<=", " <= ").replace("<", " < ").replace(">", " > ").split(" ");
 	var codeOutput = "";
 	for (i in options) {
 		if (string.indexOf(i) !== -1) {
@@ -175,13 +153,13 @@ function handleOptions(file, options) {
 // - file: The name of the file to render to
 // Returns:
 // - The file with the included partial inserted
-function handleIncludes(file) {
+function handleIncludes(file, options) {
 	var regex = /<%=\s*include (\S+)\s*%>(?!>)/g;
 	var matches = matchRegex(file, regex, 1);
 	if (matches) {
 		for (i in matches) {
 			var oldValue = '<%=\\s*include ' + matches[i][0] + '\\s*%>(?!>)';
-			file = file.replace(new RegExp(oldValue, 'g'), render('views/partials/' + matches[i][0] + '.dino', null));
+			file = file.replace(new RegExp(oldValue, 'g'), render('views/partials/' + matches[i][0] + '.dino', options));
 		}
 	}
 	return file;
@@ -193,17 +171,17 @@ function handleIncludes(file) {
 // - options: The options to render to the file
 // Returns:
 // - The file with the included partial inserted
-function handleWithIncludes(file, options) {
-	var regex = /<%=\s*include\s+(\S+)\s+with options\s*%>(?!>)/g;
-	var matches = matchRegex(file, regex, 1);
-	if (matches) {
-		for (i in matches) {
-			var oldValue = '<%=\\s*include\\s+' + matches[i][0] + '\\s+with options\\s*%>(?!>)';
-			file = file.replace(new RegExp(oldValue, 'g'), render('views/partials/' + matches[i][0] + '.dino', options));
-		}
-	}
-	return file;
-}
+// function handleWithIncludes(file, options) {
+// 	var regex = /<%=\s*include\s+(\S+)\s+with options\s*%>(?!>)/g;
+// 	var matches = matchRegex(file, regex, 1);
+// 	if (matches) {
+// 		for (i in matches) {
+// 			var oldValue = '<%=\\s*include\\s+' + matches[i][0] + '\\s+with options\\s*%>(?!>)';
+// 			file = file.replace(new RegExp(oldValue, 'g'), render('views/partials/' + matches[i][0] + '.dino', options));
+// 		}
+// 	}
+// 	return file;
+// }
 
 /* Renders components in output */
 // Parameters:

@@ -24,7 +24,7 @@ You can create partial dino templates and call them in other templates. An examp
 ```
 <%= include partial %>
 ```
-All partials are stored in the **partials** directory of the **views** directory. Partials are useful because they can be used to render headers and footers without cluttering HTML.
+All partials are stored in the **partials** directory of the **views** directory. Partials are useful because they can be used to render elements like headers and footers without cluttering HTML. Additionally, partials maintain the options passed to their parents, so one can include additional options inside of the partials.
 
 ### Options
 Options enable you to add dynamic content to your templates. Options are specified as JSON objects, where each key corresponds to a key written in the template. Before getting into this, we give a small example:
@@ -32,7 +32,7 @@ Options enable you to add dynamic content to your templates. Options are specifi
 In our routes:
 ```
 options = {
-	title: "Dino"
+    title: "Dino"
 };
 response.render('index', options);
 ```
@@ -42,7 +42,18 @@ In index.dino:
 <%= title %>
 ```
 
-In this example, "<%= title %>" will be replaced with "Dino" accordings to the options we passed to the template.
+In this example, "<%= title %>" will be replaced with "Dino" accordings to the options we passed to the template. Options are interpretive, so if for example we have a dictionary option such as:
+```
+options = {
+    titles: [
+        "Dino"
+    ]
+};
+```
+Then we can easily render:
+```
+<%= titles[0] %>
+```
 
 ### Components
 Components are useful for creating repetitive dynamic content. Like partials, you can define a template that gets rendered in another template. The difference with components is that they allow you to pass options to a partial and render multiple in succession. To do this, define an array in the options passed to the template, and place the template you want to render in the **components** directory of the **views** directory. An example:
@@ -50,12 +61,12 @@ Components are useful for creating repetitive dynamic content. Like partials, yo
 In our routes:
 ```
 options = {
-	titles: [
-    		{
+    titles: [
+            {
                 title: "Dino"
             },
             {
-            	title: "Express"
+                title: "Express"
             }
     ]
 };
@@ -89,7 +100,7 @@ Conditionals are good for rendering specific protocols given a certain state. On
 In our routes:
 ```
 options = {
-	shouldRender: true
+    shouldRender: true
 };
 ```
 
