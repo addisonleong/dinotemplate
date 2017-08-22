@@ -108,18 +108,23 @@ function handleConditionals(file, options) {
 // Returns:
 // - The parsed value. This can be used to evaluate conditionals as well as perform basic parsing.
 function interpretVariables(string, options) {
-	var codeOutput = "";
-	for (i in options) {
-		if (string.indexOf(i) !== -1) {
-			let value = options[i]
-			if (value.constructor === Array || value.constructor === Object || value.constructor === String) {
-				value = JSON.stringify(value);
+	try {
+		var codeOutput = "'use strict';\n";
+		for (i in options) {
+			if (string.indexOf(i) !== -1) {
+				let value = options[i];
+				if (value && (value.constructor === Array || value.constructor === Object || value.constructor === String)) {
+					value = JSON.stringify(value);
+				}
+				codeOutput += "var " + i + " = " + value + ";\n";
 			}
-			codeOutput += "var " + i + " = " + value + ";\n";
 		}
+		codeOutput += "return " + string + ";";
+		let newFunction = new Function(codeOutput);
+		return newFunction();
+	} catch (e) {
+		return null;
 	}
-	codeOutput += string;
-	return eval(codeOutput);
 }
 
 function escapeRegExp(string) {
@@ -140,10 +145,10 @@ function handleOptions(file, options) {
 			let variable = String(matches[i][0]);
 			let value = interpretVariables(variable, options);
 			if (value) {
-				var oldValue = '<%=\\s*(' + escapeRegExp(variable) + ')\\s*%>';
+				var oldValue = '<%=\\s*' + escapeRegExp(variable) + '\\s*%>';
 				file = file.replace(new RegExp(oldValue, 'g'), value);
 			} else {
-				var oldValue = '<%=\\s*(' + escapeRegExp(variable) + ')\\s*%>';
+				var oldValue = '<%=\\s*' + escapeRegExp(variable) + '\\s*%>';
 				file = file.replace(new RegExp(oldValue, 'g'), "");
 			}
 		}
