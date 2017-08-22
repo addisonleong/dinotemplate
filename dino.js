@@ -93,28 +93,57 @@ function renderText(file, options) {
 // Returns:
 // - The file with the conditionals executed
 function handleConditionals(file, options) {
-	var regex = /<%=\s*if\s+\((\w+)\s*==\s*([\w\d]+)\)\s+then\s+\((.*?)\)\s*%>/g;
+	var regex = /<%=\s*if\s+\((.+)\)\s+then\s+\((.*?)\)\s*%>/g;
 	// var regex = /<%= if \((login)==(true)\) then \((include header)\) %>/g;
-	var matches = matchRegex(file, regex, 3);
+	var matches = matchRegex(file, regex, 2);
 	if (matches) {
 		for (i in matches) {
-			if (matches[i][0] in options) {
-				if (options[matches[i][0]] == eval(matches[i][1])) {
-					// console.log("<%= " + matches[i][2] + " %>")
-					// console.log(renderText("<%= " + matches[i][2] + " %>", options));
-					var oldValue = '<%=\\s*if\\s+\\(' + matches[i][0] + '\\s*==\\s*' + matches[i][1] + '\\)\\s+then\\s+\\(' + matches[i][2] + '\\)\\s*%>';
-					file = file.replace(new RegExp(oldValue, 'g'), renderText("<%= " + matches[i][2] + " %>", options));
-				} else {
-					var oldValue = '<%=\\s*if\\s+\\(' + matches[i][0] + '\\s*==\\s*' + matches[i][1] + '\\)\\s+then\\s+\\(' + matches[i][2] + '\\)\\s*%>';
-					file = file.replace(new RegExp(oldValue, 'g'), "");
-				}
+			var conditional = matches[i][0];
+			var script = matches[i][1];
+			let condition = interpretVariables(conditional, options);
+			if (condition) {
+				var oldValue = '<%=\\s*if\\s+\\(\\s*' + conditional + '\\s*\\)\\s+then\\s+\\(\\s*' + script + '\\s*\\)\\s*%>';
+				file = file.replace(new RegExp(oldValue, 'g'), renderText("<%= " + script + " %>", options));
 			} else {
-				var oldValue = '<%=\\s*if\\s+\\(' + matches[i][0] + '\\s*==\\s*' + matches[i][1] + '\\)\\s+then\\s+\\(' + matches[i][2] + '\\)\\s*%>';
+				var oldValue = '<%=\\s*if\\s+\\(\\s*' + conditional + '\\s*\\)\\s+then\\s+\\(\\s*' + script + '\\s*\\)\\s*%>';
 				file = file.replace(new RegExp(oldValue, 'g'), "");
 			}
+			// if (matches[i][0] in options) {
+			// 	if (options[matches[i][0]] == eval(matches[i][1])) {
+			// 		// console.log("<%= " + matches[i][2] + " %>")
+			// 		// console.log(renderText("<%= " + matches[i][2] + " %>", options));
+					
+			// 	} else {
+			// 		var oldValue = '<%=\\s*if\\s+\\(' + matches[i][0] + '\\s*==\\s*' + matches[i][1] + '\\)\\s+then\\s+\\(' + matches[i][2] + '\\)\\s*%>';
+			// 		file = file.replace(new RegExp(oldValue, 'g'), "");
+			// 	}
+			// } else {
+			
+			// }
 		}
 	}
 	return file;
+}
+
+function interpretVariables(string, options) {
+	// let pieces = string.replace("===", " === ").replace(">=", " >= ").replace("<=", " <= ").replace("<", " < ").replace(">", " > ").split(" ");
+	var codeOutput = "";
+	for (i in options) {
+		if (string.indexOf(i) !== -1) {
+			let value = options[i]
+			if (value.constructor === Array || value.constructor === Object || value.constructor === String) {
+				value = JSON.stringify(value);
+			}
+			codeOutput += "var " + i + " = " + value + ";\n";
+		}
+	}
+	codeOutput += string;
+	console.log(codeOutput);
+	return eval(codeOutput);
+}
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /* Replaces options with appropriate inputs */
@@ -124,13 +153,18 @@ function handleConditionals(file, options) {
 // Returns:
 // - The file with the options inserted
 function handleOptions(file, options) {
-	var regex = /<%=\s*(\S+)\s*%>(?!>)/g;
+	var regex = /<%=\s*(\S+)\s*%>/g;
 	var matches = matchRegex(file, regex, 1);
 	if (matches) {
 		for (i in matches) {
-			if (matches[i][0] in options) {
-				var oldValue = '<%=\\s*(' + matches[i][0] + ')\\s*%>(?!>)';
-				file = file.replace(new RegExp(oldValue, 'g'), options[matches[i][0]]);
+			let variable = String(matches[i][0]);
+			let value = interpretVariables(variable, options);
+			if (value) {
+				var oldValue = '<%=\\s*(' + escapeRegExp(variable) + ')\\s*%>';
+				file = file.replace(new RegExp(oldValue, 'g'), value);
+			} else {
+				var oldValue = '<%=\\s*(' + escapeRegExp(variable) + ')\\s*%>';
+				file = file.replace(new RegExp(oldValue, 'g'), "");
 			}
 		}
 	}

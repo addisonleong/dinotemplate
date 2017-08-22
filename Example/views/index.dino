@@ -11,6 +11,8 @@
 		<div class="banner">
 			<h1>Hello, this is a test</h1>
 		</div>
+		<h1><%= VALUE %></h1>
+		<h1><%= titles[0].title %></h1>
 		<%= include footer with options%>
 	</body>
 </html>
