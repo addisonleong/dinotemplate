@@ -179,10 +179,11 @@ function handleComponents(file, options) {
 	var matches = matchRegex(file, regex, 2);
 	if (matches) {
 		for (i in matches) {
-			let variable = String(matches[i][0]);
-			let value = interpretVariables(variable, options);
-			var oldValue = '<%=\\s*foreach\\s+in\\s+' + escapeRegExp(variable) + '\\s+render\\s+' + matches[i][1] + '\\s*%>(?!>)';
-			file = file.replace(new RegExp(oldValue, 'g'), renderComponent(value, matches[i][1]));
+			var variable = String(matches[i][0]);
+			var component = String(matches[i][1]);
+			var value = interpretVariables(variable, options);
+			var oldValue = '<%=\\s*foreach\\s+in\\s+' + escapeRegExp(variable) + '\\s+render\\s+' + escapeRegExp(component) + '\\s*%>(?!>)';
+			file = file.replace(new RegExp(oldValue, 'g'), renderComponent(value, component));
 		}
 	}
 	return file;
