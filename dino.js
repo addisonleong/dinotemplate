@@ -1,6 +1,5 @@
 // This a basic templating engine,
 // built to quickly output HTML from templates.
-// Supports string options and include.
 var fs = require('fs');
 
 /* The template engine */
@@ -11,6 +10,41 @@ exports.express = function(filePath, options, callback) {
 		file = renderText(file, options);
 		return callback(null, file);
 	});
+}
+
+/* Renders dino files synchronously */
+// Parameters:
+// - filePath: The path to the dino file
+// - options: Options to render into the file
+// Returns:
+// - The file as plain HTML text
+function render(filePath, options) {
+	try {
+		var contents = fs.readFileSync(filePath, options);
+		contents = contents.toString();
+		return renderText(contents, options);
+	} catch(e) {
+		return "";
+	}
+}
+
+/* Renders dino text synchronously */
+// Parameters:
+// - file: The dino file
+// - options: Options to render into the file
+// Returns:
+// - The file as plain HTML text
+function renderText(file, options) {
+	try {
+		contents = file;
+		contents = handleConditionals(contents, options);
+		contents = handleIncludes(contents, options);
+		contents = handleComponents(contents, options);
+		contents = handleOptions(contents, options);
+		return contents;
+	} catch(e) {
+		return "";
+	}
 }
 
 /* An easy way to handle dynamic component creation */
@@ -41,51 +75,14 @@ function renderComponent(data, component) {
 	return result;
 }
 
-/* Renders dino files synchronously */
-// Parameters:
-// - filePath: The path to the dino file
-// - options: Options to render into the file
-// Returns:
-// - The file as plain HTML text
-function render(filePath, options) {
-	try {
-		var contents = fs.readFileSync(filePath, options);
-		contents = contents.toString();
-		return renderText(contents, options);
-	} catch(e) {
-		return "";
-	}
-}
-
-/* Renders dino text synchronously */
-// Parameters:
-// - file: The dino file
-// - options: Options to render into the file
-// Returns:
-// - The file as plain HTML text
-function renderText(file, options) {
-	try {
-		contents = file;
-		contents = handleConditionals(contents, options);
-		// contents = handleWithIncludes(contents, options);
-		contents = handleIncludes(contents, options);
-		contents = handleComponents(contents, options);
-		contents = handleOptions(contents, options);
-		return contents;
-	} catch(e) {
-		return "";
-	}
-}
-
 /* Finds if statements and executes the appropriate calls */
 // Parameters:
 // - file: The file to render
 // - options: The options
 // Returns:
-// - The file with the conditionals executed
+// - The file with the conditionals executed.
 function handleConditionals(file, options) {
 	var regex = /<%=\s*if\s+\((.+)\)\s+then\s+\((.*?)\)\s*%>/g;
-	// var regex = /<%= if \((login)==(true)\) then \((include header)\) %>/g;
 	var matches = matchRegex(file, regex, 2);
 	if (matches) {
 		for (i in matches) {
@@ -104,6 +101,12 @@ function handleConditionals(file, options) {
 	return file;
 }
 
+/* Interprets variables using options */
+// Parameters:
+// - string: The string to interpret
+// - options: The options
+// Returns:
+// - The parsed value. This can be used to evaluate conditionals as well as perform basic parsing.
 function interpretVariables(string, options) {
 	var codeOutput = "";
 	for (i in options) {
@@ -165,24 +168,6 @@ function handleIncludes(file, options) {
 	return file;
 }
 
-/* Includes additional templates in template output with options */
-// Parameters:
-// - file: The name of the file to render to
-// - options: The options to render to the file
-// Returns:
-// - The file with the included partial inserted
-// function handleWithIncludes(file, options) {
-// 	var regex = /<%=\s*include\s+(\S+)\s+with options\s*%>(?!>)/g;
-// 	var matches = matchRegex(file, regex, 1);
-// 	if (matches) {
-// 		for (i in matches) {
-// 			var oldValue = '<%=\\s*include\\s+' + matches[i][0] + '\\s+with options\\s*%>(?!>)';
-// 			file = file.replace(new RegExp(oldValue, 'g'), render('views/partials/' + matches[i][0] + '.dino', options));
-// 		}
-// 	}
-// 	return file;
-// }
-
 /* Renders components in output */
 // Parameters:
 // - file: The name of the file to render to
@@ -194,8 +179,10 @@ function handleComponents(file, options) {
 	var matches = matchRegex(file, regex, 2);
 	if (matches) {
 		for (i in matches) {
-			var oldValue = '<%=\\s*foreach\\s+in\\s+' + matches[i][0] + '\\s+render\\s+' + matches[i][1] + '\\s*%>(?!>)';
-			file = file.replace(new RegExp(oldValue, 'g'), renderComponent(options[matches[i][0]], matches[i][1]));
+			let variable = String(matches[i][0]);
+			let value = interpretVariables(variable, options);
+			var oldValue = '<%=\\s*foreach\\s+in\\s+' + escapeRegExp(variable) + '\\s+render\\s+' + matches[i][1] + '\\s*%>(?!>)';
+			file = file.replace(new RegExp(oldValue, 'g'), renderComponent(value, matches[i][1]));
 		}
 	}
 	return file;
